@@ -12,4 +12,9 @@ export const opportunityService = {
       token
     );
   },
+
+  async getAll(token: string | null) {
+    if (!token) throw new Error("No token provided");
+    return apiFetch("/opportunities", {}, token);
+  },
 };

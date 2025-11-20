@@ -14,7 +14,7 @@ export async function apiFetch(
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers,
-    credentials: "include", // ENVÍA COOKIE HTTPONLY AL BACKEND
+    credentials: "include",
   });
 
   const data = await res.json().catch(() => ({}));
