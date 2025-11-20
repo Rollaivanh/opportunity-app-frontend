@@ -14,9 +14,10 @@ export async function apiFetch(
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers,
+    credentials: "include", // ENVÍA COOKIE HTTPONLY AL BACKEND
   });
 
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
     throw new Error(data.message || "Unexpected API error");

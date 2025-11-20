@@ -1,9 +1,9 @@
 import { apiFetch } from "@/lib/api";
 
-export const opportunityService = {
-  async createOpportunity(data: any, token: string) {
+export const companiesService = {
+  async createCompany(data: any, token: string) {
     return apiFetch(
-      "/opportunities",
+      "/companies",
       {
         method: "POST",
         body: JSON.stringify(data),
@@ -11,5 +11,9 @@ export const opportunityService = {
       },
       token
     );
+  },
+
+  async getAllCompanies() {
+    return apiFetch("/companies");
   },
 };

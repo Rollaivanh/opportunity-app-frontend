@@ -1,139 +1,98 @@
 "use client";
 
-import {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  ReactNode,
-} from "react";
-
-import { refreshSession } from "@/services/authServices/authServices"; // ahora usa tu servicio
+import { createContext, useContext, useEffect, useState } from "react";
+import { authService } from "@/services/authServices/authServices";
 
 interface AuthContextType {
+  user: any;
   token: string | null;
-  user: any | null;
   loading: boolean;
-  login: (token: string, refreshToken: string, userData: any) => void;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: any) => Promise<void>;
   logout: () => void;
-  refreshTokenFn: () => Promise<void>;
+  tryRefresh: () => Promise<string | null>;
+  isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ----------------------------------------------------
-  // 🔥 REFRESH TOKEN usando tu servicio authServices.ts
-  // ----------------------------------------------------
-  const refreshTokenFn = async () => {
-    if (!refreshToken) return;
-
-    try {
-      const res = await refreshSession(refreshToken);
-
-      if (!res?.access_token) {
-        throw new Error("No se pudo refrescar el token");
-      }
-
-      setToken(res.access_token);
-      localStorage.setItem("token", res.access_token);
-    } catch (err) {
-      console.error("Refresh token inválido");
-      logout();
-    }
-  };
-
-  // ----------------------------------------------------
-  // 🔥 Cargar tokens del localStorage de manera segura
-  // ----------------------------------------------------
+  // 1) Restaurar sesión desde localStorage
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedRefresh = localStorage.getItem("refresh_token");
-    const storedUser = localStorage.getItem("user");
+    const savedToken = localStorage.getItem("access_token");
+    const savedUser = localStorage.getItem("user");
 
-    if (storedToken) setToken(storedToken);
-    if (storedRefresh) setRefreshToken(storedRefresh);
-
-    // FIX: evitar error "undefined is not valid JSON"
-    if (storedUser && storedUser !== "undefined" && storedUser !== "null") {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error("Error parseando user:", err);
-        localStorage.removeItem("user");
-      }
-    }
+    if (savedToken) setToken(savedToken);
+    if (savedUser) setUser(JSON.parse(savedUser));
 
     setLoading(false);
   }, []);
 
-  // ----------------------------------------------------
-  // 🔥 Silent Refresh cada 10 minutos
-  // ----------------------------------------------------
+  // 2) Intentar refresh si no hay token
   useEffect(() => {
-    if (!refreshToken) return;
+    if (!token) {
+      tryRefresh();
+    }
+  }, [token]);
 
-    const interval = setInterval(() => {
-      refreshTokenFn();
-    }, 10 * 60 * 1000);
+  // 3) Métodos
+  const login = async (email: string, password: string) => {
+    const res = await authService.login(email, password);
 
-    return () => clearInterval(interval);
-  }, [refreshToken]);
+    setToken(res.access_token);
+    setUser(res.user);
 
-  // ----------------------------------------------------
-  // 🔥 Login: guarda access, refresh y user
-  // ----------------------------------------------------
-  const login = (newToken: string, newRefresh: string, userData: any) => {
-    setToken(newToken);
-    localStorage.setItem("token", newToken);
-
-    setRefreshToken(newRefresh);
-    localStorage.setItem("refresh_token", newRefresh);
-
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("access_token", res.access_token);
+    localStorage.setItem("user", JSON.stringify(res.user));
   };
 
-  // ----------------------------------------------------
-  // 🔥 Logout completo
-  // ----------------------------------------------------
-  const logout = () => {
-    setToken(null);
-    setRefreshToken(null);
-    setUser(null);
+  const register = async (data: any) => {
+    await authService.register(data);
+  };
 
-    localStorage.removeItem("token");
-    localStorage.removeItem("refresh_token");
+  const tryRefresh = async (): Promise<string | null> => {
+    try {
+      const res = await authService.refresh();
+      setToken(res.access_token);
+      localStorage.setItem("access_token", res.access_token);
+      return res.access_token;
+    } catch (err) {
+      logout();
+      return null;
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem("access_token");
     localStorage.removeItem("user");
   };
 
   return (
     <AuthContext.Provider
       value={{
-        token,
         user,
+        token,
         loading,
         login,
+        register,
         logout,
-        refreshTokenFn,
+        tryRefresh,
+        isAuthenticated: !!token,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used inside an AuthProvider");
-  }
-
-  return context;
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

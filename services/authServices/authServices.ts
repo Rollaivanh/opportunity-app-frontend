@@ -1,34 +1,23 @@
 import { apiFetch } from "@/lib/api";
 
-interface RegisterPayload {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
+export const authService = {
+  async register(data: any) {
+    return apiFetch("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 
-interface LoginPayload {
-  email: string;
-  password: string;
-}
+  async login(email: string, password: string) {
+    return apiFetch("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+  },
 
-export async function registerUser(payload: RegisterPayload) {
-  return apiFetch("/auth/register", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function loginUser(payload: LoginPayload) {
-  return apiFetch("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-export async function refreshSession(refreshToken: string) {
-  return apiFetch("/auth/refresh", {
-    method: "POST",
-    body: JSON.stringify({ refresh_token: refreshToken }),
-  });
-}
+  async refresh() {
+    return apiFetch("/auth/refresh", {
+      method: "POST",
+    });
+  },
+};
