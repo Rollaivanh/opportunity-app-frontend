@@ -1,6 +1,30 @@
-import { Opportunity } from "@/types/types";
+"use client";
 
-export default function OpportunityCard({ data }: { data: Opportunity }) {
+import { Opportunity } from "@/types/types";
+import { Button } from "./ui/button";
+import { opportunityService } from "@/services/opportunityServices/opportunityServices";
+import { useAuth } from "@/context/authContext";
+
+export default function OpportunityCard({
+  data,
+  onDelete, // <— callback desde el padre
+}: {
+  data: Opportunity;
+  onDelete: (id: number) => void;
+}) {
+  const { token } = useAuth();
+
+  async function handledeleteOpportunity(id: number) {
+    if (!token) return console.error("No token available");
+
+    try {
+      await opportunityService.deleteOpportunity(id, token);
+      onDelete(id); // <— ELIMINA LA CARD INSTANTÁNEAMENTE EN UI
+    } catch (error) {
+      console.error("Error deleting opportunity:", error);
+    }
+  }
+
   return (
     <div className="bg-white shadow-sm rounded-lg p-4 border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-800">{data.position}</h3>
@@ -15,33 +39,12 @@ export default function OpportunityCard({ data }: { data: Opportunity }) {
         })}
       </p>
 
-      {data.company?.name && (
-        <p className="text-sm text-gray-700 mt-2">
-          Empresa: <span className="font-medium">{data.company.name}</span>
-        </p>
-      )}
-
-      {data.source && (
-        <p className="text-sm text-gray-600">Fuente: {data.source}</p>
-      )}
-
-      {data.link && (
-        <a
-          href={data.link}
-          target="_blank"
-          className="text-sm text-green-700 underline"
-        >
-          Ver publicación
-        </a>
-      )}
-
-      {data.description && (
-        <p className="text-sm text-gray-700 mt-2">{data.description}</p>
-      )}
-
-      {data.notes && (
-        <p className="text-sm text-gray-600 mt-2 italic">{data.notes}</p>
-      )}
+      <div className="mt-5 flex gap-2">
+        <Button onClick={() => handledeleteOpportunity(data.id)}>
+          Eliminar
+        </Button>
+        <Button>Editar</Button>
+      </div>
     </div>
   );
 }

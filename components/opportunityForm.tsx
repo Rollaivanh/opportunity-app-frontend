@@ -130,7 +130,6 @@ export default function OpportunityForm({
           </select>
         </div>
 
-        {/* DESCRIPCIÓN DEL ROLE */}
         <div className="flex flex-col gap-1">
           <Label className="text-gray-600 text-sm">Descripción del rol</Label>
           <textarea

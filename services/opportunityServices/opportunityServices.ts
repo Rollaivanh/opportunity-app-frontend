@@ -17,4 +17,8 @@ export const opportunityService = {
     if (!token) throw new Error("No token provided");
     return apiFetch("/opportunities", {}, token);
   },
+
+  async deleteOpportunity(id: number, token: string) {
+    return apiFetch(`/opportunities/${id}`, { method: "DELETE" }, token);
+  },
 };

@@ -9,6 +9,7 @@ import OpportunityCard from "@/components/opportunityCard";
 export default function OpportunitiesPage() {
   const { token } = useAuth();
   const [opportunities, setOpportunities] = useState<any[]>([]);
+
   useEffect(() => {
     if (!token) return;
     async function load() {
@@ -19,12 +20,17 @@ export default function OpportunitiesPage() {
         console.error("Error cargando oportunidades:", err);
       }
     }
-
     load();
   }, [token]);
 
+  // Cuando se crea una nueva opportunity
   function handleCreated(op: any) {
     setOpportunities((prev) => [...prev, op]);
+  }
+
+  // Cuando se elimina una existing
+  function handleDeleteLocal(id: number) {
+    setOpportunities((prev) => prev.filter((op) => op.id !== id));
   }
 
   return (
@@ -37,7 +43,7 @@ export default function OpportunitiesPage() {
 
       <div className="relative z-10 flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {opportunities.map((op) => (
-          <OpportunityCard key={op.id} data={op} />
+          <OpportunityCard key={op.id} data={op} onDelete={handleDeleteLocal} />
         ))}
       </div>
     </main>
