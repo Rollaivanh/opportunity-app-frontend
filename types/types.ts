@@ -36,3 +36,14 @@ export interface Opportunity {
   user?: User;
   company?: Company;
 }
+export interface Simulation {
+  id: number;
+  type: string;
+  interviewer_rol: string;
+  notes: string | null;
+  opportunityId: number;
+  agentId: number | null;
+  retellSessionId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

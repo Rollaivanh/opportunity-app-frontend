@@ -5,9 +5,9 @@ import { Button } from "./ui/button";
 import { opportunityService } from "@/services/opportunityServices/opportunityServices";
 import { useAuth } from "@/context/authContext";
 
-export default function OpportunityCard({
+export default function OpportunityRow({
   data,
-  onDelete, // <— callback desde el padre
+  onDelete,
 }: {
   data: Opportunity;
   onDelete: (id: number) => void;
@@ -19,31 +19,45 @@ export default function OpportunityCard({
 
     try {
       await opportunityService.deleteOpportunity(id, token);
-      onDelete(id); // <— ELIMINA LA CARD INSTANTÁNEAMENTE EN UI
+      onDelete(id);
     } catch (error) {
       console.error("Error deleting opportunity:", error);
     }
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg p-4 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-800">{data.position}</h3>
+    <div
+      className="w-full border-b border-gray-200 py-4 px-2 grid grid-cols-5 items-center text-sm text-gray-800
+                    md:grid-cols-5 gap-4"
+    >
+      {/* POSICIÓN */}
+      <div className="font-semibold">{data.position}</div>
 
-      <p className="text-sm text-gray-500">{data.status}</p>
+      {/* EMPRESA */}
+      <div className="text-gray-600">{data.company?.name || "Sin empresa"}</div>
 
-      <p className="text-sm text-gray-400 mt-1">
+      {/* ESTADO */}
+      <div className="text-gray-600">{data.status}</div>
+
+      {/* FECHA */}
+      <div className="text-gray-500">
         {new Date(data.createdAt).toLocaleDateString("es-AR", {
           day: "2-digit",
           month: "short",
           year: "numeric",
         })}
-      </p>
+      </div>
 
-      <div className="mt-5 flex gap-2">
-        <Button onClick={() => handledeleteOpportunity(data.id)}>
+      {/* ACCIONES */}
+      <div className="flex gap-2 justify-end">
+        <Button
+          variant="secondary"
+          onClick={() => handledeleteOpportunity(data.id)}
+          className="text-xs"
+        >
           Eliminar
         </Button>
-        <Button>Editar</Button>
+        <Button className="text-xs">Editar</Button>
       </div>
     </div>
   );
