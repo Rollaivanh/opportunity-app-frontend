@@ -21,30 +21,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session from localStorage
+  /**
+   * Carga inicial:
+   * 1) Ver si existe token en localStorage → usarlo
+   * 2) Si no existe → intentar refresh SOLO UNA VEZ
+   */
   useEffect(() => {
-    const savedToken = localStorage.getItem("access_token");
-    const savedUser = localStorage.getItem("user");
-
-    if (savedToken) setToken(savedToken);
-
-    if (savedUser && savedUser !== "undefined") {
+    async function loadSession() {
       try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem("user");
+        const savedToken = localStorage.getItem("access_token");
+        const savedUser = localStorage.getItem("user");
+
+        if (savedToken) {
+          setToken(savedToken);
+        } else {
+          // No hay token → intentar refresh mediante cookie HttpOnly
+          try {
+            const data = await authService.refresh();
+            setToken(data.access_token);
+            localStorage.setItem("access_token", data.access_token);
+          } catch {
+            // No se pudo refrescar → sesión inválida
+            logout();
+            setLoading(false);
+            return;
+          }
+        }
+
+        if (savedUser && savedUser !== "undefined") {
+          try {
+            setUser(JSON.parse(savedUser));
+          } catch {
+            localStorage.removeItem("user");
+          }
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error("Error al cargar la sesión:", err);
+        logout();
+        setLoading(false);
       }
     }
 
-    setLoading(false);
+    loadSession();
   }, []);
-
-  // If no token, attempt refresh using HttpOnly cookie
-  useEffect(() => {
-    if (!token) {
-      tryRefresh();
-    }
-  }, [token]);
 
   // LOGIN
   const login = async (email: string, password: string) => {
@@ -62,8 +83,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await authService.register(data);
   };
 
-  // REFRESH (cookie HttpOnly)
-  const tryRefresh = async () => {
+  // REFRESH MANUAL (backend setea cookie HttpOnly)
+  const tryRefresh = async (): Promise<string | null> => {
     try {
       const data = await authService.refresh();
 
@@ -71,11 +92,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("access_token", data.access_token);
 
       return data.access_token;
-    } catch (err) {
+    } catch {
       logout();
       return null;
     }
   };
+
   // LOGOUT
   const logout = () => {
     setUser(null);

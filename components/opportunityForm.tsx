@@ -18,6 +18,8 @@ export default function OpportunityForm({
   if (loading) return null;
 
   async function onSubmit(values: any) {
+    console.log("TOKEN ACTUAL =>", token);
+
     if (!token) {
       console.error("Usuario no autenticado.");
       return;

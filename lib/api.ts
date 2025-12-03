@@ -1,10 +1,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
-export async function apiFetch(
-  path: string,
-  options: RequestInit = {},
-  token?: string | null
-) {
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  const token = localStorage.getItem("access_token");
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
