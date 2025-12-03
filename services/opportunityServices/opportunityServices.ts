@@ -21,4 +21,16 @@ export const opportunityService = {
   async deleteOpportunity(id: number, token: string) {
     return apiFetch(`/opportunities/${id}`, { method: "DELETE" }, token);
   },
+
+  async updateOpportunity(id: number, data: any, token: string) {
+    return apiFetch(
+      `/opportunities/${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+        credentials: "include",
+      },
+      token
+    );
+  },
 };

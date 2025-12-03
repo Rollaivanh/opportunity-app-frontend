@@ -7,14 +7,6 @@ import { useAuth } from "@/context/authContext";
 import { opportunityService } from "@/services/opportunityServices/opportunityServices";
 import { companiesService } from "@/services/companiServices/companiServices";
 
-const statusOptions = [
-  { value: "SENT", label: "Enviada" },
-  { value: "UNDER_REVIEW", label: "En revisión" },
-  { value: "INTERVIEW", label: "Entrevista" },
-  { value: "REJECTED", label: "Rechazada" },
-  { value: "ACCEPTED", label: "Aceptada" },
-];
-
 export default function OpportunityForm({
   onCreated,
 }: {
@@ -26,13 +18,15 @@ export default function OpportunityForm({
   if (loading) return null;
 
   async function onSubmit(values: any) {
+    console.log("TOKEN ACTUAL =>", token);
+
     if (!token) {
       console.error("Usuario no autenticado.");
       return;
     }
 
     try {
-      // 1) Crear company
+      // 1) Crear empresa
       const companyPayload = {
         name: values.companyName,
         description: values.companyDescription || null,
@@ -44,12 +38,12 @@ export default function OpportunityForm({
         token
       );
 
-      // 2) Crear opportunity con el companyId
+      // 2) Crear oportunidad (status = SENT por defecto en backend)
       const opportunityPayload = {
         position: values.position,
-        status: values.status || undefined,
         description: values.description || null,
         companyId: company.id,
+        link: values.link || null,
       };
 
       const newOpportunity = await opportunityService.createOpportunity(
@@ -65,12 +59,15 @@ export default function OpportunityForm({
   }
 
   return (
-    <div className="w-full bg-white/70 rounded-lg shadow-md p-6 border border-gray-200">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+    <div className="w-full bg-white/80 rounded-lg shadow-md p-6 border border-gray-200">
+      <h2 className="text-2xl font-semibold text-gray-900 mb-1">
         Nueva oportunidad
       </h2>
+      <p className="text-sm text-gray-500 mb-6">
+        Registrá una postulación para poder seguir su estado después.
+      </p>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
         {/* POSICIÓN */}
         <div className="flex flex-col gap-1">
           <Label className="text-gray-600 text-sm">Posición</Label>
@@ -100,6 +97,15 @@ export default function OpportunityForm({
             className="bg-transparent border-b border-gray-300 focus:border-gray-800 focus:outline-none py-2 text-gray-900 text-sm"
           />
         </div>
+        {/* LINK DE LA OFERTA */}
+        <div className="flex flex-col gap-1">
+          <Label className="text-gray-600 text-sm">Link de la oferta</Label>
+          <input
+            {...register("link")}
+            placeholder="https://www.linkedin.com/jobs/..."
+            className="bg-transparent border-b border-gray-300 focus:border-gray-800 focus:outline-none py-2 text-gray-900 text-sm"
+          />
+        </div>
 
         {/* DESCRIPCIÓN DE LA EMPRESA */}
         <div className="flex flex-col gap-1">
@@ -114,22 +120,7 @@ export default function OpportunityForm({
           />
         </div>
 
-        {/* ESTADO */}
-        <div className="flex flex-col gap-1">
-          <Label className="text-gray-600 text-sm">Estado</Label>
-          <select
-            {...register("status")}
-            className="bg-transparent border-b border-gray-300 focus:border-gray-800 focus:outline-none py-2 text-gray-900 text-sm"
-          >
-            <option value="">Seleccionar estado</option>
-            {statusOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
+        {/* DESCRIPCIÓN DEL ROL */}
         <div className="flex flex-col gap-1">
           <Label className="text-gray-600 text-sm">Descripción del rol</Label>
           <textarea
