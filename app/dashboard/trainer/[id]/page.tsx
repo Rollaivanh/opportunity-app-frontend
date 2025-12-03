@@ -7,8 +7,8 @@ import type { Simulation } from "@/types/types";
 import { useParams } from "next/navigation";
 
 export default function TrainerSimulationPage() {
-  const params = useParams(); // ✅ OBTENER PARAMS EN CLIENT COMPONENT
-  const simulationId = Number(params.id); // ya es seguro
+  const params = useParams();
+  const simulationId = Number(params.id);
 
   const { token } = useAuth();
   const [simulation, setSimulation] = useState<Simulation | null>(null);
