@@ -1,36 +1,27 @@
 import { apiFetch } from "@/lib/api";
 
 export const opportunityService = {
-  async createOpportunity(data: any, token: string) {
-    return apiFetch(
-      "/opportunities",
-      {
-        method: "POST",
-        body: JSON.stringify(data),
-        credentials: "include",
-      },
-      token
-    );
+  getAll() {
+    return apiFetch("/opportunities");
   },
 
-  async getAll(token: string | null) {
-    if (!token) throw new Error("No token provided");
-    return apiFetch("/opportunities", {}, token);
+  createOpportunity(data: any) {
+    return apiFetch("/opportunities", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
   },
 
-  async deleteOpportunity(id: number, token: string) {
-    return apiFetch(`/opportunities/${id}`, { method: "DELETE" }, token);
+  updateOpportunity(id: number, data: any) {
+    return apiFetch(`/opportunities/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
   },
 
-  async updateOpportunity(id: number, data: any, token: string) {
-    return apiFetch(
-      `/opportunities/${id}`,
-      {
-        method: "PATCH",
-        body: JSON.stringify(data),
-        credentials: "include",
-      },
-      token
-    );
+  deleteOpportunity(id: number) {
+    return apiFetch(`/opportunities/${id}`, {
+      method: "DELETE",
+    });
   },
 };

@@ -12,10 +12,13 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
     headers,
-    credentials: "include",
+    credentials: "include", // permite refrescar token por cookie httpOnly
   });
 
-  const data = await res.json().catch(() => ({}));
+  let data: any = {};
+  try {
+    data = await res.json();
+  } catch {}
 
   if (!res.ok) {
     throw new Error(data.message || "Unexpected API error");
