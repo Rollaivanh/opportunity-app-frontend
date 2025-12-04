@@ -16,7 +16,7 @@ export default function OpportunitiesPage() {
     if (!token) return;
     async function load() {
       try {
-        const data = await opportunityService.getAll(token);
+        const data = await opportunityService.getAll();
         setOpportunities(data);
       } catch (err) {
         console.error("Error cargando oportunidades:", err);
@@ -43,8 +43,7 @@ export default function OpportunitiesPage() {
     try {
       const updated = await opportunityService.updateOpportunity(
         editing.id,
-        fields,
-        token
+        fields
       );
 
       setOpportunities((prev) =>

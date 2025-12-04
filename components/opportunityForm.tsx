@@ -3,57 +3,45 @@
 import { useForm } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/authContext";
-import { opportunityService } from "@/services/opportunityServices/opportunityServices";
-import { companiesService } from "@/services/companiServices/companiServices";
 
-export default function OpportunityForm({
-  onCreated,
-}: {
-  onCreated: (data: any) => void;
-}) {
+import { companiesService } from "@/services/companiServices/companiServices";
+import { opportunityService } from "@/services/opportunityServices/opportunityServices";
+import { useAuth } from "@/context/authContext";
+
+// Tipado para la prop del componente
+interface OpportunityFormProps {
+  onCreated: (data: any) => void; // Podés reemplazar "any" por tipo Opportunity si ya lo tenés
+}
+
+export default function OpportunityForm({ onCreated }: OpportunityFormProps) {
   const { register, handleSubmit, reset } = useForm();
-  const { token, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) return null;
 
   async function onSubmit(values: any) {
-    console.log("TOKEN ACTUAL =>", token);
-
-    if (!token) {
-      console.error("Usuario no autenticado.");
-      return;
-    }
-
     try {
       // 1) Crear empresa
-      const companyPayload = {
+      const company = await companiesService.createCompany({
         name: values.companyName,
         description: values.companyDescription || null,
         location: values.companyLocation || null,
-      };
+      });
 
-      const company = await companiesService.createCompany(
-        companyPayload,
-        token
-      );
-
-      // 2) Crear oportunidad (status = SENT por defecto en backend)
-      const opportunityPayload = {
+      // 2) Crear oportunidad
+      const newOpportunity = await opportunityService.createOpportunity({
         position: values.position,
         description: values.description || null,
-        companyId: company.id,
         link: values.link || null,
-      };
+        companyId: company.id,
+      });
 
-      const newOpportunity = await opportunityService.createOpportunity(
-        opportunityPayload,
-        token
-      );
-
+      // 3) Pasar nueva oportunidad al padre
       onCreated(newOpportunity);
+
+      // 4) Limpiar formulario
       reset();
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error creando oportunidad:", err);
     }
   }
@@ -97,6 +85,7 @@ export default function OpportunityForm({
             className="bg-transparent border-b border-gray-300 focus:border-gray-800 focus:outline-none py-2 text-gray-900 text-sm"
           />
         </div>
+
         {/* LINK DE LA OFERTA */}
         <div className="flex flex-col gap-1">
           <Label className="text-gray-600 text-sm">Link de la oferta</Label>

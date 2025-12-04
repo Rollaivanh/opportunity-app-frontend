@@ -37,6 +37,7 @@ export interface Opportunity {
   company?: Company;
 }
 export interface Simulation {
+  [x: string]: any;
   id: number;
   type: string;
   interviewer_rol: string;
