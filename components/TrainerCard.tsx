@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// Badges personalizados
 import { StatusBadge } from "@/components/StatusBadge";
 import { SimulationTypeBadge } from "@/components/SimulationTypeBadge";
 
