@@ -1,3 +1,5 @@
+import { Navbar } from "@/components/Navbar";
+
 export default function DashboardLayout({
   children,
 }: {
@@ -7,7 +9,7 @@ export default function DashboardLayout({
     <div className="flex w-full h-full">
       <div className="hidden xl-block w-80 h-full xl:fixed">SideBar</div>
       <div className=" w-full xl:ml-80">
-        <p>Navbar</p>
+        <Navbar />
         <div className="p-6 bg-[#fafbfc] dark:bg-secondary">{children}</div>
       </div>
     </div>
